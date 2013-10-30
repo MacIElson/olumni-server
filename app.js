@@ -12,7 +12,7 @@ var express = require('express')
 var app = express(), db;
 
 app.configure(function () {
-  db = mongojs(process.env.MONGOLAB_URI || 'weachieve', ['courses','mySessions']);
+  db = mongojs(process.env.MONGOLAB_URI || 'olumni', ['courses','mySessions','groups','posts']);
   app.set('port', process.env.PORT || 3000);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
@@ -45,6 +45,14 @@ app.configure('production', function () {
  * Helpful
  */
 
+function validateShort (name) {
+  return String(name).substr(0, 25);
+}
+
+function validateLong (tweet) {
+  return String(tweet).substr(0, 140);
+}
+
 function validateUsername (name) {
   return String(name).substr(0, 25);
 }
@@ -58,16 +66,16 @@ function validateTweet (tweet) {
  */
 
 app.get('/', function (req, res) {
-  res.redirect('https://github.com/MaciCrowell/weAchieve-server');
+  res.redirect('https://github.com/MaciCrowell/olumni-server');
 })
 
 app.get('/secret', function (req, res) {
-  db.tweets.find({
-    // published: true
+  db.groups.find({
+    published: true
   }).sort({date: -1}, function (err, docs) {
     console.log(docs);
     res.render('index', {
-      title: 'WeAchieve',
+      title: 'Olumni',
       quotes: docs,
       user: {}
     });
@@ -79,83 +87,96 @@ RegExp.escape= function(s) {
 };
 
 /**
- * get all courses
+ * get all groups
  */
 
-app.get('/courses', function (req, res) {
-  db.courses.distinct('course', function (err, names) {
-    res.json({"courses": names});
+app.get('/groups', function (req, res) {
+  db.groups.distinct('group', function (err, names) {
+    res.json({"groups": names});
   });
 })
 
 /**
- * get courses user is in 
+ * get groups user is in 
  */
 
-app.get('/:username/courses', function (req, res) {
-  var query = {
+app.get('/:username/groups', function (req, res) {
+  db.groups.find({
     username: validateUsername(req.params.username)
-  };
-  if ('q' in req.query) {
-    query.course = {$regex: new RegExp(".*" + RegExp.escape(req.query.q) + ".*", i)};
-  }
-  db.courses.find(query).sort({date: -1}).limit(10, function (err, docs) {
+  }, function (err, docs) {
     res.json({
-      "courses": docs.map(function (entry) {
-        return entry.course;
+      "groups": docs.map(function (entry) {
+        return entry.group;
       }),
+      "detail": docs
     });
   })
 });
 
 /**
- * add course for user
+ * add user to group
  */
 
-app.post('/:username/course', function (req, res) {
-  if (req.body.course) {
-    db.courses.save({
-      course: validateTweet(req.body.course),
-      username: validateUsername(req.params.username)
-    }, res.json.bind(res, {"error": false}));
+app.post('/:username/group', function (req, res) {
+  if (req.params.username) {
+    db.groups.findOne({
+      username: validateShort(req.params.username),
+      group: validateShort(req.body.group)
+    }, function (err, found) {
+      if (!found) {
+        db.groups.save({
+          username: req.params.username,
+          group: req.body.group,
+        }, res.json.bind(res, {"error": false, message: '1'}));
+      } else {
+        res.json({"error": false, message: '2'})
+      }
+    });
   } else {
-    res.json({error: true, message: 'Invalid course, please specify course="...." in the body.'}, 500);
+    res.json({error: true, message: 'Invalid add group request'}, 500);
   }
 })
 
 /**
- * delete course for user
+ * delete group for user
  */
 
-app.post('/:username/delCourse', function (req, res) {
-  db.courses.remove({
-    username: validateUsername(req.params.username),
-    course: validateTweet(req.body.course)
+app.post('/:username/delGroup', function (req, res) {
+  db.groups.remove({
+    username: validateShort(req.params.username),
+    group: validateLong(req.body.group)
   }, function (err) {
     res.json({"error": err})
   })
 });
 
 /**
- * createSession
+ * create post
  */
 
-app.post('/createSession', function (req, res) {
-  if (req.body.course && req.body.date && req.body.startTime && req.body.endTime && req.body.place && req.body.task && req.body.user) {
+app.post('/createPost', function (req, res) {
+  if (req.body.message && req.body.reply && req.body.parentItem && req.body.date && req.body.username && req.body.lastDate) {
     id = db.ObjectId();
-    db.mySessions.save({
-      course: validateTweet(req.body.course),
-      task: req.body.task,
+    db.posts.save({
+      reply: req.body.reply,
+      parent: req.body.parentItem,
+      username: req.body.username,
       date: req.body.date,
-      startTime: req.body.startTime,
-      endTime: req.body.endTime,
-      place: req.body.place,
-      usersAttending: [validateUsername(req.body.user)],
+      lastDate: req.body.lastDate,
+      message: req.body.message,
+      resolved: 'false',
       _id: id
     });
-    res.json({error: false, sessionid: id});
+    if ('true'.localeCompare(req.body.reply)) {
+      console.log("Hello World");
+      db.posts.update(
+            {_id: db.ObjectId(req.body.parentItem)},
+            { $set : { lastDate: req.body.date} }
+          )
+    }
+    res.json({error: false, postid: id});
   } else {
-    res.json({error: true, message: 'Invalid course, please specify course="...." in the body.'}, 500);
+    res.json({error: true, message: 'Invalid post add request'}, 500);
   }
 })
 
@@ -163,13 +184,13 @@ app.post('/createSession', function (req, res) {
  * get all sessions
  */
 
-app.get('/sessions', function (req, res) {
+app.get('/posts', function (req, res) {
   var query = { };
   if ('q' in req.query) {
-    query.mySessions = {$regex: ".*" + req.query.q + ".*"};
+    query.posts = {$regex: ".*" + req.query.q + ".*"};
   }
-  db.mySessions.find(query).sort({date: -1}, function (err, docs) {
-    res.json({"sessions": docs});
+  db.posts.find(query).sort({date: -1}, function (err, docs) {
+    res.json({"posts": docs});
   })
 });
 
@@ -177,16 +198,8 @@ app.get('/sessions', function (req, res) {
  * delete session based on id
  */
 
-app.post('/delSession/:id', function (req, res) {
-  db.mySessions.remove({
-    _id: db.ObjectId(req.params.id)
-  }, function (err) {
-    res.json({"error": err})
-  })
-});
-
-app.del('/delSession/:id', function (req, res) {
-  db.mySessions.remove({
+app.post('/delPost/:id', function (req, res) {
+  db.posts.remove({
     _id: db.ObjectId(req.params.id)
   }, function (err) {
     res.json({"error": err})
@@ -197,8 +210,8 @@ app.del('/delSession/:id', function (req, res) {
  * delete all sessions
  */
 
-app.del('/delAllSessions321', function (req, res) {
-  db.mySessions.drop();
+app.del('/delAllPosts321', function (req, res) {
+  db.posts.drop();
   res.json({"error": "???"})
 });
 
