@@ -185,7 +185,9 @@ app.post('/createPost', function (req, res) {
  */
 
 app.get('/posts', function (req, res) {
-  var query = { };
+  var query = { 
+
+  };
   if ('q' in req.query) {
     query.posts = {$regex: ".*" + req.query.q + ".*"};
   }
@@ -194,8 +196,38 @@ app.get('/posts', function (req, res) {
   })
 });
 
+app.get('/:parentName/postsIDs', function (req, res) {
+  var query = { 
+    parent: req.params.groupName
+  };
+  if ('q' in req.query) {
+    query.posts = {$regex: ".*" + req.query.q + ".*"};
+  }
+  db.posts.find(query).sort({date: -1}, function (err, docs) {
+    res.json({
+      "postIDs": docs.map(function (entry) {
+        return entry._id;
+      }),
+    });
+  })
+});
+
+app.get('/:parentName/posts', function (req, res) {
+  var query = { 
+    parent: req.params.groupName
+  };
+  if ('q' in req.query) {
+    query.posts = {$regex: ".*" + req.query.q + ".*"};
+  }
+  db.posts.find(query).sort({date: -1}, function (err, docs) {
+    res.json({
+      "posts": docs
+    });
+  })
+});
+
 /**
- * delete session based on id
+ * delete post based on id
  */
 
 app.post('/delPost/:id', function (req, res) {
@@ -207,7 +239,7 @@ app.post('/delPost/:id', function (req, res) {
 });
 
 /**
- * delete all sessions
+ * delete all posts
  */
 
 app.del('/delAllPosts321', function (req, res) {
