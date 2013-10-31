@@ -107,8 +107,7 @@ app.get('/:username/groups', function (req, res) {
     res.json({
       "groups": docs.map(function (entry) {
         return entry.group;
-      }),
-      "detail": docs
+      })
     });
   })
 });
@@ -155,14 +154,14 @@ app.post('/:username/delGroup', function (req, res) {
  */
 
 app.post('/createPost', function (req, res) {
-  if (req.body.message && req.body.reply && req.body.parentItem && req.body.date && req.body.username && req.body.lastDate) {
+  if (req.body.message && req.body.reply && req.body.parentItem && req.body.date && req.body.username) {
     id = db.ObjectId();
     db.posts.save({
       reply: req.body.reply,
       parent: req.body.parentItem,
       username: req.body.username,
       date: req.body.date,
-      lastDate: req.body.lastDate,
+      lastDate: req.body.date,
       message: req.body.message,
       resolved: 'false',
       _id: id
@@ -181,7 +180,7 @@ app.post('/createPost', function (req, res) {
 })
 
 /**
- * get all sessions
+ * get all posts
  */
 
 app.get('/posts', function (req, res) {
@@ -198,7 +197,7 @@ app.get('/posts', function (req, res) {
 
 app.get('/:parentName/postsIDs', function (req, res) {
   var query = { 
-    parent: req.params.groupName
+    parent: req.params.parentName
   };
   if ('q' in req.query) {
     query.posts = {$regex: ".*" + req.query.q + ".*"};
@@ -207,14 +206,14 @@ app.get('/:parentName/postsIDs', function (req, res) {
     res.json({
       "postIDs": docs.map(function (entry) {
         return entry._id;
-      }),
+      })
     });
   })
 });
 
 app.get('/:parentName/posts', function (req, res) {
   var query = { 
-    parent: req.params.groupName
+    parent: req.params.parentName
   };
   if ('q' in req.query) {
     query.posts = {$regex: ".*" + req.query.q + ".*"};
@@ -245,59 +244,6 @@ app.post('/delPost/:id', function (req, res) {
 app.del('/delAllPosts321', function (req, res) {
   db.posts.drop();
   res.json({"error": "???"})
-});
-
-/**
- * add user to session
- */
-
-app.post('/:session/addUser', function (req, res) {
-  if (req.body.username) {
-        db.mySessions.update(
-          {_id: db.ObjectId(req.params.session)},
-          { $addToSet : { usersAttending: validateUsername(req.body.username) } }
-        )
-        res.json({error: false});
-  } else {
-    res.json({error: true, message: 'Invalid following request'}, 500);
-  }
-});
-
-/**
- * remove user from session
- */
-
-app.post('/:session/removeUser', function (req, res) {
-  if (req.body.username) {
-    db.mySessions.findOne({
-      _id: db.ObjectId(req.params.session)
-    }, function (err, found) {
-      if (found) {
-        var indexOfUser = found.usersAttending.indexOf(validateUsername(req.body.username));
-        if (indexOfUser > -1) {
-          found.usersAttending.splice(indexOfUser, 1);
-          db.mySessions.update(
-            {_id: db.ObjectId(req.params.session)},
-            { $set : { usersAttending: found.usersAttending} }
-          )
-          if (found.usersAttending.length == 0) {
-            db.mySessions.remove({
-              _id: db.ObjectId(req.params.session)
-            }, function (err) {
-              console.log(err);
-            })
-          }
-          res.json({"error": false})
-        } else {
-          res.json({error: true, message: 'User was not in session'}, 500);
-        }
-      } else {
-        res.json({error: true, message: 'Invalid Session Id request'}, 500);
-      } 
-    })
-  } else {
-    res.json({error: true, message: 'Invalid following request'}, 500);
-  }
 });
 
 /**
