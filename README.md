@@ -1,116 +1,120 @@
-# weachieve
+# olumni-server
 
 ## API
 
-### Courses
-Get, join, delete courses.
+### Groups
+join, create, delete groups.
 
-&#x20;<a href="#api-POST-username-course" name="api-POST-username-course">#</a> <b>POST</b> /`:username`/course  
-Enroll a user in a class. Submit a payload:
-
-```
-{
-  "course": "...course name..."
-}
-```
-
-&#x20;<a href="#api-POST-username-delCourse" name="api-POST-username-delCourse">#</a> <b>POST</b> /`:username`/delCourse  
-Remove user from class. Submit a payload:
+&#x20;<a href="#api-POST-username-group" name="api-POST-username-group">#</a> <b>POST</b> /`:username`/group 
+Add user to a group. Submit a payload:
 
 ```
 {
-  "course": "...course name..."
+  "group": "...group name..."
 }
 ```
 
-&#x20;<a href="#api-GET-username-courses" name="api-GET-username-courses">#</a> <b>GET</b> /`:username`/courses  
-Get all classes user is enrolled in. Returns:
+&#x20;<a href="#api-POST-username-delGroup" name="api-POST-username-delGroup">#</a> <b>POST</b> /`:username`/delGroup  
+Remove user from group. Submit a payload:
+
+```
+{
+  "group": "...group name..."
+}
+```
+
+&#x20;<a href="#api-GET-username-groups" name="api-GET-username-groups">#</a> <b>GET</b> /`:username`/groups  
+Get all groups user is  in. Returns:
 
 ```js
 {
-  "courses": [
-    "MobileProto",
-    "Linearity 2"
+  "groups": [
+    "Carpe",
+    "HelpMe"
   ]
 }
 ```
 
-&#x20;<a href="#api-GET-courses" name="api-GET-courses">#</a> <b>GET</b> /courses  
-Get all courses. Returns:
+&#x20;<a href="#api-GET-groups" name="api-GET-groups">#</a> <b>GET</b> /groups 
+Get all groups. Returns:
 
 ```js
 {
-  "courses": [
-    "MobileProto",
-    "Linearity 2"
+  "groups": [
+    "Carpe",
+    "HelpMe"
   ]
 }
 ```
 
-### Sessions
-Create, join, delete sessions.
+### Posts
+Create, join, delete posts.
 
-&#x20;<a href="#api-GET-sessions" name="api-GET-sessions">#</a> <b>GET</b> /sessions  
-Get all sessions. Returns: 
+&#x20;<a href="#api-POST-createPost" name="api-POST-createSession">#</a> <b>POST</b> /createPost  
+Create post. Submit a payload:
+
+```
+{
+      "reply": "false",
+      "parent": "Carpe",
+      "username": "...",
+      "date": "...time in ms...",
+      "message": "Hello Carpe!",
+}
+```
+
+
+&#x20;<a href="#api-GET-posts" name="api-GET-posts">#</a> <b>GET</b> /posts  
+Get all posts. Returns: 
 
 ```js
 {
-  "sessions": [
+  "posts": [
     {
-      "course": "MobileProto",
-      "task": "Lab 5",
-      "date": "...",
-      "startTime": "...",
-      "endTime": "...",
-      "place": "WH2AL",
-      "usersAttending": [
-        "maci"
-      ],
-      "_id": "525cb61fd94d8c0200000001"
+      "reply": "false",
+      "parent": "Carpe",
+      "username": "maci",
+      "date": "...time in ms...",
+      "message": "Hello Carpe!",
     }
   ]
 }
 ```
 
-&#x20;<a href="#api-POST-createSession" name="api-POST-createSession">#</a> <b>POST</b> /createSession  
-Create Session. Submit a payload:
+&#x20;<a href="#api-GET-parentName-posts" name="api-GET-parentName-posts">#</a> <b>GET</b> /:parentName/posts  
+Get posts by by group or top level post. Returns: 
 
-```
+```js
 {
-  "course": "...course name...",
-  "task": "...task name...",
-  "date": "...date...",
-  "startTime": "...time...",
-  "endTime": "...time...",
-  "place": "...course nameplace...",
-  "user": "...first user..."
+  "posts": [
+    {
+      "reply": "false",
+      "parent": "Carpe",
+      "username": "maci",
+      "date": "...time in ms...",
+      "message": "Hello Carpe!",
+    }
+  ]
 }
 ```
 
-&#x20;<a href="#api-DELETE-delAllSessions321" name="api-DELETE-delAllSessions321">#</a> <b>DELETE</b> /delAllSessions321
-Delete all Sessions. No payload needed.
+&#x20;<a href="#api-GET-parentName-postsIDs" name="api-GET-parentName-postsIDs">#</a> <b>GET</b> /:parentName/postsIDs 
+Get post IDs by group or top level post. Returns:
 
-&#x20;<a href="#api-POST-delSession-id" name="api-POST-delSession-id">#</a> <b>POST</b> /delSession/`:id`
-Delete Session. No payload needed.
-
-&#x20;<a href="#api-POST-session-addUser" name="api-POST-session-addUser">#</a> <b>POST</b> /`:sessionid`/addUser 
-Add user to session. Submit a payload:
-
-```
+```js
 {
-  "username": "...username...",
+  "postIDs": [
+    "52707801d9e2504012000001",
+    "52707801d9e2504013000001"
+  ]
 }
 ```
 
-&#x20;<a href="#api-POST-session-removeUser" name="api-POST-session-removeUser">#</a> <b>POST</b> /`:sessionid`/removeUser 
-remove User from session. Submit a payload:
+&#x20;<a href="#api-DELETE-delAllPosts321" name="api-DELETE-delAllPosts321">#</a> <b>DELETE</b> /delAllPosts321
+Delete all Posts. No payload needed.
 
-```
-{
-  "username": "...username...",
-}
-```
-
+&#x20;<a href="#api-POST-delPost-id" name="api-POST-delPost-id">#</a> <b>POST</b> /delPost/`:id`
+Delete Post. No payload needed.
 
 
 
