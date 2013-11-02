@@ -157,6 +157,7 @@ app.post('/createPost', function (req, res) {
   if (req.body.reply && req.body.message && req.body.parentItem && req.body.date && req.body.username && req.body.viewers) {
     id = db.ObjectId();
     db.posts.save({
+      group: req.body.group,
       parent: req.body.parentItem,
       username: req.body.username,
       date: req.body.date,
@@ -180,6 +181,24 @@ app.post('/createPost', function (req, res) {
   }
 })
 
+app.post('/:username/getMissingPosts', function (req, res) {
+ localIDs = req.body.postIDs.split('&').map(function(x){return db.ObjectId(x)});
+ localGroups = req.body.groups.split('&');
+ console.log(localGroups)
+ var query = { 
+    group: { $in: localGroups },
+    viewers: { $in: ['public', req.params.username] },
+    _id: { $nin: localIDs}
+  };
+  if ('q' in req.query) {
+    query.posts = {$regex: ".*" + req.query.q + ".*"};
+  }
+  db.posts.find(query).sort({date: -1}, function (err, docs) {
+    console.log(docs)
+    res.json({"posts": docs});
+  })
+  //console.log(serverIDs)
+});
 /**
  * get all posts
  */
@@ -196,11 +215,16 @@ app.get('/posts', function (req, res) {
   })
 });
 
-app.get('/getPosts/:postIDs', function (req, res) {
+/**
+ * get posts from ids
+ */
+
+app.get('/:username/getPosts/:postIDs', function (req, res) {
   console.log(req.params.postIDs);
   ids = req.params.postIDs.split('&').map(function(x){return db.ObjectId(x)});
   console.log(ids);
   var query = { 
+    viewers: { $in: ['public', req.params.username] },
     _id: { $in: ids }
   };
   if ('q' in req.query) {
@@ -211,12 +235,11 @@ app.get('/getPosts/:postIDs', function (req, res) {
   })
 });
 
-/**
- * get posts from ids
- */
 
-app.get('/:parentName/postsIDs', function (req, res) {
+
+app.get('/:username/:parentName/postsIDs', function (req, res) {
   var query = { 
+    viewers: { $in: ['public', req.params.username] },
     parent: req.params.parentName
   };
   if ('q' in req.query) {
@@ -269,8 +292,9 @@ app.post('/:postID/resolved', function (req, res) {
  * get child posts
  */
 
-app.get('/:parentName/posts', function (req, res) {
+app.get('/:username/:parentName/posts', function (req, res) {
   var query = { 
+    viewers: { $in: ['public', req.params.username] },
     parent: req.params.parentNamefindO
   };
   if ('q' in req.query) {

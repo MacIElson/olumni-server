@@ -56,6 +56,7 @@ Create post. Submit a payload:
 ```
 {
       "parent": "Carpe",
+      "group": "Carpe",
       "username": "...",
       "date": "...time in ms...",
       "message": "Hello Carpe!",
@@ -64,6 +65,35 @@ Create post. Submit a payload:
 }
 ```
 
+&#x20;<a href="#api-POST-username-getMissingPosts" name="api-POST-username-getMissingPosts">#</a> <b>POST</b> /createPost  
+Submit a payload:
+
+```
+{
+      "postIDs": "5275271fa4a3dfd40c000001&5275271fa4a3dfd40d000001",
+      "groups": "Carpe&Helpme&Randomness",
+}
+```
+Return:
+
+```js
+{
+  "posts": [
+    {
+      "parent": "Carpe",
+      "parent": "Carpe",
+      "username": "...",
+      "date": "...time in ms...",
+      "lastDate": "...time in ms...",
+      "message": "Hello Carpe!",
+      "viewers": "public" or "mingram&clee&apatterson",
+      "reply": "false" or "true",
+      "resolved": "false" or "true"
+      _id: "52745d971e7d50211b000001"
+    }
+  ]
+}
+```
 
 &#x20;<a href="#api-GET-posts" name="api-GET-posts">#</a> <b>GET</b> /posts  
 Get all posts. Returns: 
@@ -72,6 +102,7 @@ Get all posts. Returns:
 {
   "posts": [
     {
+      "parent": "Carpe",
       "parent": "Carpe",
       "username": "...",
       "date": "...time in ms...",
@@ -95,6 +126,7 @@ Get posts by group or top level post. Returns:
   "posts": [
     {
       "parent": "Carpe",
+      "parent": "Carpe",
       "username": "...",
       "date": "...time in ms...",
       "lastDate": "...time in ms...",
@@ -108,14 +140,15 @@ Get posts by group or top level post. Returns:
 }
 ```
 
-&#x20;<a href="#api-GET-getPosts-postIDs" name="api-GET-getPosts-postIDs">#</a> <b>GET</b> /getPosts/`:postIDs`  
-Get posts ID(s). eg. /getPosts/52745d971e7d50211b000001&52745d971e7d50211c000001 Returns: 
+&#x20;<a href="#api-GET-username-getPosts-postIDs" name="api-GET-username-getPosts-postIDs">#</a> <b>GET</b> /:username/getPosts/`:postIDs`  
+Get posts ID(s). eg. /maci/getPosts/52745d971e7d50211b000001&52745d971e7d50211c000001 Returns: 
 
 
 ```js
 {
   "posts": [
     {
+      "parent": "Carpe",
       "parent": "Carpe",
       "username": "...",
       "date": "...time in ms...",
@@ -149,7 +182,7 @@ Set resolved Status of post. Submit a payload:
 ```
 
 
-&#x20;<a href="#api-GET-parentName-postsIDs" name="api-GET-parentName-postsIDs">#</a> <b>GET</b> /:parentName/postsIDs 
+&#x20;<a href="#api-GET-useranem-parentName-postsIDs" name="api-GET-username-parentName-postsIDs">#</a> <b>GET</b> /:username/:parentName/postsIDs 
 Get post IDs by group or top level post. Returns:
 
 ```js
