@@ -154,20 +154,21 @@ app.post('/:username/delGroup', function (req, res) {
  */
 
 app.post('/createPost', function (req, res) {
-  if (req.body.message && req.body.reply && req.body.parentItem && req.body.date && req.body.username) {
+  if (req.body.reply && req.body.message && req.body.parentItem && req.body.date && req.body.username && req.body.viewers) {
     id = db.ObjectId();
     db.posts.save({
-      reply: req.body.reply,
       parent: req.body.parentItem,
       username: req.body.username,
       date: req.body.date,
       lastDate: req.body.date,
       message: req.body.message,
       resolved: 'false',
+      viewers: req.body.viewers.split("&"),
+      reply: req.body.reply,
       _id: id
     });
-    if ('true'.localeCompare(req.body.reply)) {
-      console.log("Hello World");
+    console.log('true'.localeCompare(req.body.reply) == 0)
+    if ('true'.localeCompare(req.body.reply)== 0) {
       db.posts.update(
             {_id: db.ObjectId(req.body.parentItem)},
             { $set : { lastDate: req.body.date} }
@@ -195,6 +196,25 @@ app.get('/posts', function (req, res) {
   })
 });
 
+app.get('/getPosts/:postIDs', function (req, res) {
+  console.log(req.params.postIDs);
+  ids = req.params.postIDs.split('&').map(function(x){return db.ObjectId(x)});
+  console.log(ids);
+  var query = { 
+    _id: { $in: ids }
+  };
+  if ('q' in req.query) {
+    query.posts = {$regex: ".*" + req.query.q + ".*"};
+  }
+  db.posts.find(query).sort({date: -1}, function (err, docs) {
+    res.json({"posts": docs});
+  })
+});
+
+/**
+ * get posts from ids
+ */
+
 app.get('/:parentName/postsIDs', function (req, res) {
   var query = { 
     parent: req.params.parentName
@@ -211,9 +231,47 @@ app.get('/:parentName/postsIDs', function (req, res) {
   })
 });
 
+/**
+ * allow user to view post
+ */
+
+app.post('/:postID/addViewer', function (req, res) {
+  if (req.body.username) {
+        db.posts.update(
+          {_id: db.ObjectId(req.params.postID)},
+          { $addToSet : { viewers: validateUsername(req.body.username) } }
+        )
+        res.json({error: false});
+  } else {
+    res.json({error: true, message: 'Invalid add user request'}, 500);
+  }
+});
+
+/**
+ * make post resolved
+ */
+
+app.post('/:postID/resolved', function (req, res) {
+  if (req.body.resolved) {
+    console.log(db.ObjectId(req.params.postID));
+    console.log(req.body.resolved);
+        db.posts.update(
+          {_id: db.ObjectId(req.params.postID)},
+          { $set : { resolved: req.body.resolved } }
+        )
+        res.json({error: false});
+  } else {
+    res.json({error: true, message: 'Invalid add user request'}, 500);
+  }
+});
+
+/**
+ * get child posts
+ */
+
 app.get('/:parentName/posts', function (req, res) {
   var query = { 
-    parent: req.params.parentName
+    parent: req.params.parentNamefindO
   };
   if ('q' in req.query) {
     query.posts = {$regex: ".*" + req.query.q + ".*"};

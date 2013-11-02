@@ -55,11 +55,12 @@ Create post. Submit a payload:
 
 ```
 {
-      "reply": "false",
       "parent": "Carpe",
       "username": "...",
       "date": "...time in ms...",
       "message": "Hello Carpe!",
+      "viewers": "public" or "mingram&clee&apatterson"
+      "reply": "false" or "true"
 }
 ```
 
@@ -71,32 +72,82 @@ Get all posts. Returns:
 {
   "posts": [
     {
-      "reply": "false",
       "parent": "Carpe",
-      "username": "maci",
+      "username": "...",
       "date": "...time in ms...",
+      "lastDate": "...time in ms...",
       "message": "Hello Carpe!",
+      "viewers": "public" or "mingram&clee&apatterson",
+      "reply": "false" or "true",
+      "resolved": "false" or "true"
+      _id: "52745d971e7d50211b000001"
     }
   ]
 }
 ```
 
 &#x20;<a href="#api-GET-parentName-posts" name="api-GET-parentName-posts">#</a> <b>GET</b> /:parentName/posts  
-Get posts by by group or top level post. Returns: 
+Get posts by group or top level post. Returns: 
+
 
 ```js
 {
   "posts": [
     {
-      "reply": "false",
       "parent": "Carpe",
-      "username": "maci",
+      "username": "...",
       "date": "...time in ms...",
+      "lastDate": "...time in ms...",
       "message": "Hello Carpe!",
+      "viewers": "public" or "mingram&clee&apatterson",
+      "reply": "false" or "true",
+      "resolved": "false" or "true"
+      _id: "52745d971e7d50211b000001"
     }
   ]
 }
 ```
+
+&#x20;<a href="#api-GET-getPosts-postIDs" name="api-GET-getPosts-postIDs">#</a> <b>GET</b> /getPosts/`:postIDs`  
+Get posts ID(s). eg. /getPosts/52745d971e7d50211b000001&52745d971e7d50211c000001 Returns: 
+
+
+```js
+{
+  "posts": [
+    {
+      "parent": "Carpe",
+      "username": "...",
+      "date": "...time in ms...",
+      "lastDate": "...time in ms...",
+      "message": "Hello Carpe!",
+      "viewers": "public" or "mingram&clee&apatterson",
+      "reply": "false" or "true",
+      "resolved": "false" or "true"
+      _id: "52745d971e7d50211b000001"
+    }
+  ]
+}
+```
+
+&#x20;<a href="#api-POST-postID-addViewer" name="api-POST-postID-addViewer">#</a> <b>POST</b> /`:postID`/addViewer  
+Give user viewing permissions. Submit a payload:
+
+```
+{
+  "username": "...username..."
+}
+```
+
+&#x20;<a href="#api-POST-postID-resolved" name="api-POST-postID-resolved">#</a> <b>POST</b> /`:postID`/resolved  
+Set resolved Status of post. Submit a payload:
+
+```
+{
+  "resolved": "true" or "false"
+}
+```
+
 
 &#x20;<a href="#api-GET-parentName-postsIDs" name="api-GET-parentName-postsIDs">#</a> <b>GET</b> /:parentName/postsIDs 
 Get post IDs by group or top level post. Returns:
