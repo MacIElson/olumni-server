@@ -154,7 +154,7 @@ app.post('/:username/delGroup', function (req, res) {
  */
 
 app.post('/createPost', function (req, res) {
-  if (req.body.reply && req.body.message && req.body.parentItem && req.body.date && req.body.username && req.body.viewers) {
+  if (req.body.subject && req.body.reply && req.body.message && req.body.parentItem && req.body.date && req.body.username && req.body.viewers) {
     id = db.ObjectId();
     db.posts.save({
       group: req.body.group,
@@ -163,6 +163,7 @@ app.post('/createPost', function (req, res) {
       date: req.body.date,
       lastDate: req.body.date,
       message: req.body.message,
+      subject: req.body.subject,
       resolved: 'false',
       viewers: req.body.viewers.split("&"),
       reply: req.body.reply,
